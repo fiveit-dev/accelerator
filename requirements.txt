@@ -2,3 +2,4 @@ torch
 transformers
 onnx
 boto3
+onnxruntime

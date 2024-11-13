@@ -13,11 +13,11 @@ import mlflow.data
 
 ## Retrieval data from alquimia capsule public S3
 ALQUIMIA_S3 = "https://minio-api-minio.apps.alquimiaai.hostmydemo.online"
-ALQUIMIA_BUCKET = "alquimia-capsule"
+ALQUIMIA_BUCKET = "alquimia-capsules"
 DATASET_PATH = "datasets/text-classification/spam-filter"
 MODEL_PATH = "models/spam-filter"
 
-os.environ["MLFLOW_EXPERIMENT_NAME"] = "alquimia-capsules"
+os.environ["MLFLOW_EXPERIMENT_NAME"] = "alquimiai-capsules"
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
@@ -73,7 +73,9 @@ def retrieve_model():
                     if file_name == "model.onnx":
                         model = onnx.load_model("./model.onnx")
                         mlflow.onnx.log_model(
-                            model, registered_model_name="spam-filter"
+                            model,
+                            artifact_path="spam-filter",
+                            registered_model_name="spam-filter",
                         )  ## Model registry
                     elif file_name == "train_dataset.csv":
                         train_dataset_csv = pd.read_csv(file_name)
@@ -88,8 +90,7 @@ def retrieve_model():
                         )
                         mlflow.log_input(test_dataset, context="testing")
                     else:
-                        print(f"Uploading artifact: {file_name}")
-                        mlflow.log_artifact(file_name)
+                        mlflow.log_artifact(file_name, artifact_path="spam-filter")
                     os.remove(file_name)
             mlflow.end_run()
         except Exception as e:
