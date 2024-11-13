@@ -1,6 +1,0 @@
-numpy
-matplotlib
-mlflow
-transformers
-boto3
-torch
