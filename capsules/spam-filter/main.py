@@ -61,42 +61,64 @@ def retrieve_dataset():
 def retrieve_model():
     run_name = "Spam filter base training"
     with mlflow.start_run(run_name=run_name):
+        # Retrieve and upload all relevant files and directories
         pages = paginator.paginate(Bucket=ALQUIMIA_BUCKET, Prefix=MODEL_PATH)
         try:
             for page in tqdm(pages, leave=False, desc="Going through pages"):
                 for obj in tqdm(page["Contents"], leave=False, desc="Loading model"):
-                    data = s3.get_object(Bucket=ALQUIMIA_BUCKET, Key=obj.get("Key"))
                     file_name = obj.get("Key").split("/")[-1]
-                    # Save the file temporarily in local
-                    with open(file_name, "wb") as f:
-                        f.write(data["Body"].read())
-                    if file_name == "model.onnx":
-                        model = onnx.load_model("./model.onnx")
-                        mlflow.onnx.log_model(
-                            model,
-                            artifact_path="spam-filter",
-                            registered_model_name="spam-filter",
-                        )  ## Model registry
-                    elif file_name == "train_dataset.csv":
-                        train_dataset_csv = pd.read_csv(file_name)
-                        train_dataset: PandasDataset = mlflow.data.from_pandas(  # type: ignore
-                            train_dataset_csv, source="Label Studio"
+                    data = s3.get_object(Bucket=ALQUIMIA_BUCKET, Key=obj.get("Key"))
+
+                    # Save and upload config.json into the postprocess directory
+                    if file_name == "config.json":
+                        config_path = os.path.join(
+                            "triton/spam-filter/postprocess", file_name
                         )
-                        mlflow.log_input(train_dataset, context="training")
-                    elif file_name == "test_dataset.csv":
-                        test_dataset_csv = pd.read_csv(file_name)
-                        test_dataset: PandasDataset = mlflow.data.from_pandas(  # type: ignore
-                            test_dataset_csv, source="Label Studio"
+                        with open(config_path, "wb") as f:
+                            f.write(data["Body"].read())
+                        mlflow.log_artifact(
+                            config_path, artifact_path="spam-filter/postprocess"
                         )
-                        mlflow.log_input(test_dataset, context="testing")
+                        os.remove(config_path)
                     else:
-                        mlflow.log_artifact(file_name, artifact_path="spam-filter")
-                    os.remove(file_name)
-            mlflow.end_run()
+                        with open(file_name, "wb") as f:
+                            f.write(data["Body"].read())
+
+                        if file_name == "model.onnx":
+                            model = onnx.load_model("./model.onnx")
+                            mlflow.onnx.log_model(
+                                model,
+                                artifact_path="spam-filter",
+                                registered_model_name="spam-filter",
+                            )
+                        elif file_name == "train_dataset.csv":
+                            train_dataset_csv = pd.read_csv(file_name)
+                            train_dataset: PandasDataset = mlflow.data.from_pandas(  # type: ignore
+                                train_dataset_csv, source="Label Studio"
+                            )
+                            mlflow.log_input(train_dataset, context="training")
+                        elif file_name == "test_dataset.csv":
+                            test_dataset_csv = pd.read_csv(file_name)
+                            test_dataset: PandasDataset = mlflow.data.from_pandas(  # type: ignore
+                                test_dataset_csv, source="Label Studio"
+                            )
+                            mlflow.log_input(test_dataset, context="testing")
+                        else:
+                            mlflow.log_artifact(file_name, artifact_path="spam-filter")
+
+                        os.remove(file_name)
+
+            # Log the entire folder structure under triton/spam-filter
+            for subdir in ["ensemble_spam_filter", "postprocess", "preprocess"]:
+                mlflow.log_artifact(
+                    os.path.join("triton/spam-filter", subdir),
+                    artifact_path=f"spam-filter/{subdir}",
+                )
+
         except Exception as e:
             print(f"An error occurred: {e}")
-
-    mlflow.end_run()
+        finally:
+            mlflow.end_run()
 
 
 def retrieve_from_s3():
