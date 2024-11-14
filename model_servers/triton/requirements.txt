@@ -1,0 +1,7 @@
+transformers==4.38.2
+torch==2.2.1
+accelerate==0.22.0
+torchaudio
+bark
+numpy
+
