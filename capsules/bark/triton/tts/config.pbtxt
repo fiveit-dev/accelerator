@@ -1,0 +1,33 @@
+name: "tts"
+backend: "python"
+input [
+  {
+    name: "text"
+    data_type: TYPE_STRING
+    dims: [1]
+  },
+  {
+    name: "speaker"
+    data_type: TYPE_STRING
+    dims: [1]
+  }
+]
+output [
+  {
+    name: "audio"
+    data_type: TYPE_UINT8
+    dims: [1]
+  },
+  {
+    name: "sampling_rate"
+    data_type: TYPE_INT32
+    dims: [1]
+  }
+]
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+    gpus: [0]
+  }
+]
