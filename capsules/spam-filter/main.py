@@ -64,6 +64,13 @@ def retrieve_model():
         # Retrieve and upload all relevant files and directories
         pages = paginator.paginate(Bucket=ALQUIMIA_BUCKET, Prefix=MODEL_PATH)
         try:
+            # Log the entire folder structure under triton/spam-filter
+            for subdir in ["ensemble_spam_filter", "postprocess", "preprocess"]:
+                mlflow.log_artifact(
+                    os.path.join("triton/spam-filter", subdir),
+                    artifact_path=f"spam-filter/{subdir}",
+                )
+
             for page in tqdm(pages, leave=False, desc="Going through pages"):
                 for obj in tqdm(page["Contents"], leave=False, desc="Loading model"):
                     file_name = obj.get("Key").split("/")[-1]
@@ -88,7 +95,7 @@ def retrieve_model():
                             model = onnx.load_model("./model.onnx")
                             mlflow.onnx.log_model(
                                 model,
-                                artifact_path="spam-filter",
+                                artifact_path="spam-filter/model/1/",
                                 registered_model_name="spam-filter",
                             )
                         elif file_name == "train_dataset.csv":
@@ -107,13 +114,6 @@ def retrieve_model():
                             mlflow.log_artifact(file_name, artifact_path="spam-filter")
 
                         os.remove(file_name)
-
-            # Log the entire folder structure under triton/spam-filter
-            for subdir in ["ensemble_spam_filter", "postprocess", "preprocess"]:
-                mlflow.log_artifact(
-                    os.path.join("triton/spam-filter", subdir),
-                    artifact_path=f"spam-filter/{subdir}",
-                )
 
         except Exception as e:
             print(f"An error occurred: {e}")
