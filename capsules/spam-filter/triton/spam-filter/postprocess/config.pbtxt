@@ -1,21 +1,27 @@
 name: "postprocess"
 backend: "python"
-input[
+input [
   {
-   name:"logits",
-   data_type: TYPE_FLOAT32,
-   dims:[-1,1]
+    name: "logits"
+    data_type: TYPE_FP32  # Ensure the correct data type notation
+    dims: [-1, 2]
   }
 ]
-output[
+output [
   {
-   name:"label",
-   data_type: TYPE_STRING,
-   dims:[1]
-  }
+    name: "label"
+    data_type: TYPE_STRING
+    dims: [1]
+  },
   {
-    name:"score",
-    data_type: TYPE_FLOAT32,
-    dims:[1]
+    name: "score"
+    data_type: TYPE_FP32  # Ensure the correct data type notation
+    dims: [1]
   }
 ]
+instance_group [
+  {
+    kind: KIND_CPU
+  }
+]
+

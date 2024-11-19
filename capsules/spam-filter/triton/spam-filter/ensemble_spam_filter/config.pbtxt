@@ -1,6 +1,6 @@
 name: "ensemble_spam_filter"
 platform: "ensemble"
-input[
+input [
   {
     name: "input"
     data_type: TYPE_STRING
@@ -11,12 +11,12 @@ output [
   {
     name: "label"
     data_type: TYPE_STRING
-    dims:[1]
-  }
+    dims: [1]
+  },
   {
     name: "score"
-    data_type: TYPE_FLOAT
-    dims:[1]
+    data_type: TYPE_FP32
+    dims: [1]
   }
 ]
 
@@ -24,6 +24,7 @@ ensemble_scheduling {
   step [
     {
       model_name: "preprocess"
+      model_version: -1  # Ensures the latest version is used
       input_map {
         key: "input"
         value: "input"
@@ -39,6 +40,7 @@ ensemble_scheduling {
     },
     {
       model_name: "model"
+      model_version: -1
       input_map {
         key: "input_ids"
         value: "input_ids"
@@ -54,6 +56,7 @@ ensemble_scheduling {
     },
     {
       model_name: "postprocess"
+      model_version: -1
       input_map {
         key: "logits"
         value: "logits"
@@ -69,4 +72,3 @@ ensemble_scheduling {
     }
   ]
 }
-

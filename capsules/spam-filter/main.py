@@ -35,29 +35,6 @@ s3 = boto3.client(
 paginator = s3.get_paginator("list_objects_v2")
 
 
-def retrieve_dataset():
-    pages = paginator.paginate(Bucket=ALQUIMIA_BUCKET, Prefix=DATASET_PATH)
-    annotations = []
-    try:
-        for page in tqdm(pages, leave=False, desc="Going through pages"):
-            for obj in tqdm(page["Contents"], leave=False, desc="Loading annotations"):
-                data = s3.get_object(Bucket=ALQUIMIA_BUCKET, Key=obj.get("Key"))
-                content = json.loads((data["Body"].read()).decode("utf-8"))
-                task = content.get("task").get("data").get("text")
-                result = content.get("result")[0].get("value").get("choices")
-                annotations.append(
-                    {
-                        "data": {"text": task},
-                        "predictions": [{"result": {"value": {"choices": result}}}],
-                    }
-                )
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    with open("annotations.json", "w") as f:
-        json.dump(annotations, f)
-
-
 def retrieve_model():
     run_name = "Spam filter base training"
     with mlflow.start_run(run_name=run_name):
@@ -66,9 +43,9 @@ def retrieve_model():
         try:
             # Log the entire folder structure under triton/spam-filter
             for subdir in ["ensemble_spam_filter", "postprocess", "preprocess"]:
-                mlflow.log_artifact(
+                mlflow.log_artifacts(
                     os.path.join("triton/spam-filter", subdir),
-                    artifact_path=f"spam-filter/{subdir}",
+                    artifact_path=subdir,  # Avoid repeating the parent directory name
                 )
 
             for page in tqdm(pages, leave=False, desc="Going through pages"):
@@ -83,9 +60,7 @@ def retrieve_model():
                         )
                         with open(config_path, "wb") as f:
                             f.write(data["Body"].read())
-                        mlflow.log_artifact(
-                            config_path, artifact_path="spam-filter/postprocess"
-                        )
+                        mlflow.log_artifact(config_path, artifact_path="postprocess")
                         os.remove(config_path)
                     else:
                         with open(file_name, "wb") as f:
@@ -95,7 +70,7 @@ def retrieve_model():
                             model = onnx.load_model("./model.onnx")
                             mlflow.onnx.log_model(
                                 model,
-                                artifact_path="spam-filter/model/1/",
+                                artifact_path="model/1",
                                 registered_model_name="spam-filter",
                             )
                         elif file_name == "train_dataset.csv":
@@ -111,7 +86,7 @@ def retrieve_model():
                             )
                             mlflow.log_input(test_dataset, context="testing")
                         else:
-                            mlflow.log_artifact(file_name, artifact_path="spam-filter")
+                            mlflow.log_artifact(file_name)
 
                         os.remove(file_name)
 
