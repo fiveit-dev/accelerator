@@ -61,7 +61,7 @@ def retrieve_model():
                     # Save and upload config.json into the postprocess directory
                     if file_name == "config.json":
                         config_path = os.path.join(
-                            "triton/spam-filter/postprocess", file_name
+                            "triton/spam-filter/postprocess/1", file_name
                         )
                         with open(config_path, "wb") as f:
                             f.write(data["Body"].read())
