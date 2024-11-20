@@ -42,7 +42,12 @@ def retrieve_model():
         pages = paginator.paginate(Bucket=ALQUIMIA_BUCKET, Prefix=MODEL_PATH)
         try:
             # Log the entire folder structure under triton/spam-filter
-            for subdir in ["ensemble_spam_filter", "postprocess", "preprocess"]:
+            for subdir in [
+                "ensemble_spam_filter",
+                "postprocess",
+                "preprocess",
+                "model",
+            ]:
                 mlflow.log_artifacts(
                     os.path.join("triton/spam-filter", subdir),
                     artifact_path=subdir,  # Avoid repeating the parent directory name
