@@ -28,7 +28,7 @@ class TritonPythonModel:
             logits = torch.tensor(logits_tensor.as_numpy())
 
             # Compute softmax probabilities
-            probs = torch.nn.functional.softmax(logits, dim=1)
+            probs = torch.nn.functional.softmax(logits, dim=1).argmax(dim=1)
 
             # Determine the predicted label
             predicted_label_index = torch.argmax(probs, dim=1).item()
