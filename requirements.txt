@@ -3,3 +3,4 @@ transformers
 onnx
 boto3
 onnxruntime
+jupyterlab
