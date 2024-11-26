@@ -4,3 +4,5 @@ onnx
 boto3
 onnxruntime
 jupyterlab
+datasets
+evaluate
