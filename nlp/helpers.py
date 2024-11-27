@@ -94,7 +94,6 @@ class Retriever:
 
 
 class Trainer:
-
     def text_classification(
         self,
         dataset: pd.DataFrame,

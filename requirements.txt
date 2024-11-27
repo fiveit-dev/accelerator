@@ -6,3 +6,4 @@ onnxruntime
 jupyterlab
 datasets
 evaluate
+seaborn
