@@ -7,3 +7,5 @@ jupyterlab
 datasets
 evaluate
 seaborn
+PyPDF2 
+python-docx
