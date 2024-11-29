@@ -20,6 +20,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import mlflow
 import random
+import mlflow.data
+from mlflow.data.pandas_dataset import PandasDataset
+from optimum.onnxruntime import ORTModelForSequenceClassification
+from pathlib import Path
+import onnx
 
 S3_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 S3_SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -95,6 +100,13 @@ class Retriever:
 
 
 class AlquimiaTrainer:
+    def __init__(
+        self,
+        model_name,
+        MLFLOW_EXPERIMENT: str = "default",
+    ):
+        self.model_name = model_name
+        self.MLFLOW_EXPERIMENT = MLFLOW_EXPERIMENT
 
     def __compute_metrics(self, eval_pred):
         metric = evaluate.load("accuracy")
@@ -117,8 +129,6 @@ class AlquimiaTrainer:
         label2id: dict,
         id2label: dict,
         base_model: str,
-        model_name: str,
-        MLFLOW_EXPERIMENT: str = "default",
         MLFLOW_RUN_NAME: str = "default",
         test_size: float = 0.2,
         lr: float = 2e-5,
@@ -131,16 +141,16 @@ class AlquimiaTrainer:
     ):
         input_column_name = "text"
 
-        df_train, df_test = train_test_split(dataset, test_size=test_size)
+        self.df_train, self.df_test = train_test_split(dataset, test_size=test_size)
 
         ## Convert to Huggingface dataset
-        train_dataset = Dataset.from_pandas(df_train)
-        test_dataset = Dataset.from_pandas(df_test)
+        train_dataset = Dataset.from_pandas(self.df_train)
+        test_dataset = Dataset.from_pandas(self.df_test)
 
-        tokenizer = AutoTokenizer.from_pretrained(base_model)
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model)
 
         def preprocess_function(examples):
-            return tokenizer(examples[input_column_name], truncation=True)
+            return self.tokenizer(examples[input_column_name], truncation=True)
 
         tokenized_train = train_dataset.map(preprocess_function, batched=True)
         tokenized_test = test_dataset.map(preprocess_function, batched=True)
@@ -151,11 +161,12 @@ class AlquimiaTrainer:
             id2label=id2label,
             label2id=label2id,
         )
-        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
 
-        os.environ["MFLOW_EXPERIMENT_NAME"] = MLFLOW_EXPERIMENT
+        os.environ["MFLOW_EXPERIMENT_NAME"] = self.MLFLOW_EXPERIMENT
+
         training_args = TrainingArguments(
-            hub_model_id=model_name,
+            hub_model_id=self.model_name,
             output_dir=MLFLOW_RUN_NAME,
             learning_rate=lr,
             per_device_train_batch_size=train_batch_size,
@@ -165,9 +176,10 @@ class AlquimiaTrainer:
             evaluation_strategy=eval_strategy,
             logging_strategy=log_strategy,
         )
+
         mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI"))  # type: ignore
 
-        return Trainer(
+        self.trainer = Trainer(
             model=model,
             args=training_args,
             train_dataset=tokenized_train,
@@ -175,6 +187,50 @@ class AlquimiaTrainer:
             compute_metrics=self.__compute_metrics,
             eval_dataset=tokenized_test,
         )
+        return self.trainer
+
+    def log_model(self, run_name: str):
+        if self.trainer is None:
+            raise ValueError("Trainer not initialized")
+        self.trainer.save_model(self.model_name)
+        experiment = mlflow.get_experiment_by_name(self.MLFLOW_EXPERIMENT)
+        if experiment is None:
+            raise ValueError("Experiment not found")
+
+        filter_string = f"tags.mlflow.runName = '{run_name}'"
+        runs = mlflow.search_runs(
+            experiment_ids=[experiment.experiment_id], filter_string=filter_string
+        )
+
+        # Extract the run_id from the DataFrame
+        if not runs.empty:
+            previous_run_id = runs.iloc[0]["run_id"]
+            print(f"Run ID: {previous_run_id}")
+        else:
+            raise ValueError("No run found with the specified name.")
+
+        # Log the model to the previous run
+        train_dataset: PandasDataset = mlflow.data.from_pandas(
+            self.df_train, source="Label Studio"
+        )
+        test_dataset: PandasDataset = mlflow.data.from_pandas(
+            self.df_test, source="Label Studio"
+        )
+        with mlflow.start_run(run_id=previous_run_id):
+            ORTModelForSequenceClassification.from_pretrained(
+                self.model_name, export=True
+            ).save_pretrained(f"{self.model_name}_onnx")
+            tmp_dir = Path(f"{self.model_name}_onnx")
+            mlflow.log_artifacts(tmp_dir, artifact_path=self.model_name)
+            mlflow.log_artifact("confusion_matrix.png", artifact_path=self.model_name)
+            self.tokenizer.save_pretrained(f"{self.model_name}_onnx")
+            onnx_model = onnx.load_model(f"{self.model_name}_onnx/model.onnx")
+            mlflow.onnx.log_model(
+                onnx_model, self.model_name, registered_model_name=self.model_name
+            )
+            mlflow.log_input(train_dataset, context="training")
+            mlflow.log_input(test_dataset, context="validation")
+            mlflow.end_run()
 
 
 class Helper:
