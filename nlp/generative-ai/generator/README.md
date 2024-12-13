@@ -33,6 +33,7 @@ In the `projects` folder, and under a specific 'project_name', you will find the
     
 ## Usage Instructions
 1. Prerequisites
+   
     Ensure the required dependencies are installed:
     ```
     !pip install -r requirements.txt
@@ -41,12 +42,16 @@ In the `projects` folder, and under a specific 'project_name', you will find the
     - LLM_API_URL: URL of the LLM API endpoint.
     - LLM_API_KEY: API key for authentication.
     - LLM_NAME: Name of the LLM to use.
+
 2. Input Setup
+
     Run the notebook and input the following values when prompted:
     - Project Name: Name of the project folder under the projects/ directory.
     - Iterations: Number of synthetic conversations to generate.
     - Max Exchanges: Maximum number of exchanges per generated conversation.
+
 3. Prepare Project Data
+
     Ensure the project folder includes:
     - config/: Contains configuration files like chunk-strategy.json and output-format.json.
     - prompting/: Contains .txt files for prompt templates and injections.
