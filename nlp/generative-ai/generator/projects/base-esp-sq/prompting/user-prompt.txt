@@ -1,0 +1,4 @@
+Genera una conversación entre el usuario y el asistente con la siguiente estructura:
+{conversation_structure}
+
+IMPORTANTE: la conversación debe contener exactamente una consulta/orden/comentatio del usuario y la respectiva respuesta del asistente. NO se permiten conversaciones de mas de un intercambio!

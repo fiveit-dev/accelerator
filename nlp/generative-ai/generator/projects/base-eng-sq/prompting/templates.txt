@@ -1,0 +1,20 @@
+User: <Greetings. For example: '{greeting_msg}'>  
+Assistant: <Greets and asks, 'How can I assist you today?'> /conversational/
+
+User: <Initial inquiry ('in context'): {initial_inquiry}>  
+Assistant: <Response to the user's inquiry> /conversational/
+
+User: <Follow-up inquiry ('in context'): {follow_up_inquiry}>  
+Assistant: <Response to the user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant's response ('in context'). For example: '{gratitude_msg}'>  
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+
+User: <End the conversation. For example: '{end_msg}'>  
+Assistant: <Says goodbye> /conversational/  
+----------------------------------------------------------------------------------------------------------------------------------------  
+User: <An 'out-of-context' comment: {out_of_topic_msg}>  
+Assistant: <I'm sorry, but I can't comment on topics outside the bank's business scope> /irrelevant/  
+----------------------------------------------------------------------------------------------------------------------------------------  
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>  
+Assistant: <I'm sorry, I can't understand, could you repeat your question?> /spam/  

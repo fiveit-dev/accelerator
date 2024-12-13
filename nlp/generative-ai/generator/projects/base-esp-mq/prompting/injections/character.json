@@ -1,0 +1,36 @@
+{
+    "user_mood": [
+        "feliz",
+        "triste",
+        "enojado",
+        "frustrado",
+        "neutral",
+        "curioso",
+        "impaciente",
+        "excitado"
+    ],
+    "user_personality": [
+        "educada",
+        "directa",
+        "sarcastica",
+        "formal",
+        "casual",
+        "agresiva",
+        "divertida",
+        "tímida"
+    ],
+    "user_query_length": [
+        "cortas",
+        "medianas",
+        "largas"
+    ],
+    "assistant_identity": [
+        "Eres un asistente de IA para..."
+    ],
+    "user_identity": [
+        "un usuario..."
+    ],
+    "knowledge_base_name": [
+        "documentación..."
+    ]
+}

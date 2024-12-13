@@ -1,0 +1,19 @@
+{
+  "id": 10000,
+  "data": { "text": "" },
+  "annotations": [
+    {
+      "id": 1,
+      "result": [
+        {
+          "value": { "choices": [""] },
+          "id": "uv2A9WJ3NG",
+          "from_name": "sentiment",
+          "to_name": "text",
+          "type": "choices",
+          "origin": "manual"
+        }
+      ]
+    }
+  ]
+}

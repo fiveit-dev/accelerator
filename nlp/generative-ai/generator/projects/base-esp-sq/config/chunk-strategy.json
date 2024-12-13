@@ -1,0 +1,18 @@
+{
+    "topic1/doc1.md": {
+        "max_words": 150,
+        "overlap": 50,
+        "separator": "(?<=[.!?])\\s+"
+    },
+    "topic2/doc1.md": {
+        "max_words": 150,
+        "overlap": 50,
+        "separator": "(?<=[.!?])\\s+"
+    },
+    "topic2/doc2.md": {
+        "max_words": 150,
+        "overlap": 50,
+        "separator": "(?<=[.!?])\\s+"
+    }
+
+}

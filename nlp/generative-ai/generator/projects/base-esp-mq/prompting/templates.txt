@@ -1,0 +1,200 @@
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Finalizar la conversación. Por ejemplo: '{end_msg}'> 
+Asistente: <'Despedirse'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Finalizar la conversación. Por ejemplo: '{end_msg}'> 
+Asistente: <'Despedirse'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Finalizar la conversación. Por ejemplo: '{end_msg}'> 
+Asistente: <'Despedirse'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Saludos. Por ejemplo: '{greeting_msg}'> 
+Asistente: <Saluda y pregunta '¿En qué puedo ayudarte hoy?'> /conversational/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Expresar agradecimiento por la respuesta del asistente. Por ejemplo: '{gratitude_msg}'>
+Asistente: <'¡De nada! ¿Puedo ayudarte en algo más?'> /conversational/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Consulta de seguimiento: {follow_up_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Consulta inicial: {initial_inquiry}> 
+Asistente: <Respuesta a la consulta del usuario> /conversational/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/
+
+Usuario: <Un comentario fuera de contexto: {out_of_topic_msg}>
+Asistente: <Lo siento, pero no puedo comentar sobre temas fuera del alcance de los negocios del banco> /irrelevant/
+
+Usuario: <Un mensaje sin sentido, repetitivo e incomprensible: {spam_msg}>
+Asistente: <Lo siento, no puedo entender, ¿puedes repetir tu pregunta?> /spam/

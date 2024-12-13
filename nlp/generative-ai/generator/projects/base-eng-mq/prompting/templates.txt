@@ -1,0 +1,200 @@
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <End the conversation. For example: {end_msg}>
+Assistant: <'Say goodbye'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <End the conversation. For example: {end_msg}>
+Assistant: <'Say goodbye'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <End the conversation. For example, {end_msg}>
+Assistant: <'Say goodbye'> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Greetings. For example: {greeting_msg}>
+Assistant: <Greetings and ask 'How may I assist you today?'> /conversational/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <Express gratitude for the assistant´s response. For example: {gratitude_msg}>
+Assistant: <'You're welcome! Can I help you with anything else?'> /conversational/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <Follow-up inquiry: {follow_up_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <Initial inquiry: {initial_inquiry}>
+Assistant: <Response to user's inquiry> /conversational/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+----------------------------------------------------------------------------------------------------------------------------------------
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/
+
+User: <An out-of-context comment: {out_of_topic_msg}>
+Assistant: <I am sorry, but I can not comment on topics outside the scope of the bank business> /irrelevant/
+
+User: <A nonsensical, repetitive, and incomprehensible message: {spam_msg}>
+Assistant: <Sorry, I can not understand, can you repeat your question?> /spam/

@@ -1,0 +1,64 @@
+{
+"greeting_msg": [
+    "Hola",
+    "Cómo estás?",
+    "Aloha",
+    "Alo"
+],
+"initial_inquiry": [
+    "una pregunta dentro del contexto de la información proporcionada",
+    "un comentario dentro del contexto de la información proporcionada",
+    "un pedido de resumen sobre la información proporcionada (dentro de contexto)",
+    "una consulta de información dentro del contexto de la información proporcionada",
+    "una tarea relacionada con la información proporcionada (dentro de contexto)"
+],
+"follow_up_inquiry": [
+    "una pregunta sobre la última respuesta del asistente (dentro de contexto)",
+    "un comentario sobre la última respuesta del asistente (dentro de contexto)",
+    "pedir al asistente que aclare o desarrolle sobre el tópico en discusión (dentro de contexto)",
+    "continuación de la conversación (dentro de contexto)",
+    "cambiar el tema de conversación haciendo una pregunta dentro de contexto, pero en relación a un tópico distinto",
+    "cambiar el tema de conversación haciendo un comentario dentro de contexto, pero en relación a un tópico distinto"
+],
+"out_of_topic_msg": [
+    "pregunta sobre {random_topic}, por ejemplo {random_topic_example}",
+    "comentario sobre {random_topic}, por ejemplo: {random_topic_example}",
+    "pregunta sobre algo relacionado a '{random_word}'",
+    "comentario sobre algo relacionado a '{random_word}'"
+],
+"spam_msg": [
+    "letras aleatorias...",
+    "repetir la misma letra o una combinación de letras {random_number} veces",
+    "símbolos aleatorios...",
+    "repetir un símbolo o una combinación de símbolos {random_number} veces",
+    "números aleatorios...",
+    "repetir un número o una combinación de números {random_number} veces",
+    "dialecto aleatorio y extraño",
+    "combinación aleatoria de letras, símbolos y números",
+    "repetir '{random_word}' {random_number} veces",
+    "un4 0r4ci0n 4l 4z4r 4scr1t4 c0n s1mb0l0s y núm3r0s :)",
+    "un espacio en blanco o ningun texto",
+    "{random_number} {random_number} {random_number} {random_number} {random_number}",
+    "{random_word} {random_word} {random_word} {random_word} {random_word}",
+    "!#$%&/()=?",
+    "?=)(/&%$#",
+    "¨*[:]",
+    "_:;[[¨*"
+],
+"gratitude_msg": [
+    "Gracias",
+    "Muchas gracias",
+    "Eso es todo por ahora",
+    "Muy bien, gracias"
+],
+"end_msg": [
+    "Adiós",
+    "Chau",
+    "Eso es todo",
+    "Bien",
+    "Gracias",
+    "Fin",
+    "Ok",
+    "Okey"
+]
+}

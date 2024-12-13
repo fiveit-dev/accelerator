@@ -1,0 +1,4 @@
+Generate a conversation between the user and the assistant with the following structure:  
+{conversation_structure}
+
+IMPORTANT: The conversation must contain exactly one user query/command/comment and the corresponding assistant response. Conversations with more than one exchange are NOT allowed!

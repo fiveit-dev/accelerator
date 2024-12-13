@@ -1,0 +1,62 @@
+{
+"greeting_msg": [
+    "Hi",
+    "Hello",
+    "How are you?",
+    "Aloha",
+    "Alo"
+],
+"initial_inquiry": [
+    "an in-context question about the given information",
+    "an in-context statement about the given information",
+    "an in-context summary request about the given information",
+    "an in-context retrieval request about the given information",
+    "an in-context task related to the given information"
+],
+"follow_up_inquiry": [
+    "a question about the last assistant response",
+    "a statement about the last assistant response",
+    "ask the assistant to clarify or expand on the topic",
+    "in-context conversation continuation"
+],
+"out_of_topic_msg": [
+    "ask a question about {random_topic}, for example: {random_topic_example}",
+    "make a statement about {random_topic}, for example: {random_topic_example}",
+    "ask a question about something related to {random_word}",
+    "make a statement about something related to {random_word}"            
+],
+"spam_msg": [
+    "random letters...",
+    "repeat the same letter or a combination of letters {random_number} times",
+    "random symbols...",
+    "repeat a symbol or a combination of symbols {random_number} times",
+    "random numbers...",
+    "repeat a number or a combination of numbers {random_number} times",
+    "random and strange dialect",
+    "random combination of letters, symbols, and numbers",
+    "repeat '{random_word}' {random_number} times",
+    "a random sentence wr1tt3n with numbers instead of vowels (a:4 e:3 i:1 o:0) and containing the word {random_word}",
+    "a blank space or no text",
+    "{random_number} {random_number} {random_number} {random_number} {random_number}",
+    "{random_word} {random_word} {random_word} {random_word} {random_word}",
+    "!#$%&/()=?",
+    "?=)(/&%$#",
+    "¨*[:]",
+    "_:;[[¨*"
+],
+"gratitude_msg": [
+    "Thanks",
+    "Thank you",
+    "Thank you very much",
+    "That is all for now"
+],
+"end_msg": [
+    "Bye",
+    "Bye bye",
+    "That is all",
+    "Goodbye",
+    "End",
+    "Ok",
+    "Okey"
+]
+}

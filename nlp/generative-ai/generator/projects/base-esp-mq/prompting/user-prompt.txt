@@ -1,0 +1,2 @@
+Genera una conversación entre el usuario y el asistente con la siguiente estructura:
+{conversation_structure}
