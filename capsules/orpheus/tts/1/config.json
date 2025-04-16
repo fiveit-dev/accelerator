@@ -1,0 +1,12 @@
+{
+  "vllm": {
+    "model_name": "canopylabs/orpheus-tts-0.1-finetune-prod",
+    "dtype": "float16",
+    "max_model_len": 10000
+  },
+  "model": {
+    "channels": 1,
+    "sample_rate": 24000,
+    "sample_width": 2
+  }
+}
