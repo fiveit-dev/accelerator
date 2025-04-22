@@ -29,7 +29,22 @@ class TritonPythonModel:
         self.inflight_thread_count = 0
         self.inflight_thread_count_lck = threading.Lock()
 
-    def response_thread(self, request, text_input, speaker_input):
+    def _make_response(self, chunk: bytes, channels, sample_width, sample_rate):
+        frame_count = len(chunk) // (sample_width * channels)
+        audio_np = np.frombuffer(chunk, dtype=np.int16).reshape(frame_count, channels)
+        self.logger.log_info(
+            f"Audio shape: {audio_np.shape}, channels: {channels}, sample_width: {sample_width}"
+        )
+        return pb_utils.InferenceResponse(
+            output_tensors=[
+                pb_utils.Tensor("audio", audio_np.astype(np.int16)),
+                pb_utils.Tensor(
+                    "sampling_rate", np.array([sample_rate], dtype=np.int32)
+                ),
+            ]
+        )
+
+    def response_thread(self, response_sender, text_input, speaker_input):
         try:
             syn_tokens = self.model.generate_speech(
                 prompt=text_input, voice=speaker_input
@@ -37,28 +52,35 @@ class TritonPythonModel:
             channels = self.config_dict["model"]["channels"]
             sample_rate = self.config_dict["model"]["sample_rate"]
             sample_width = self.config_dict["model"]["sample_width"]
-
-            for audio_chunk in syn_tokens:
-                frame_count = len(audio_chunk) // (sample_width * channels)
-                audio_array = np.frombuffer(audio_chunk, dtype=np.int16)
-                response = pb_utils.InferenceResponse(
-                    output_tensors=[
-                        pb_utils.Tensor(
-                            "audio",
-                            audio_array.reshape(frame_count, channels).astype(np.int16),
-                        ),
-                        pb_utils.Tensor(
-                            "sample_rate",
-                            np.array([sample_rate], dtype=np.int32),
-                        ),
-                    ]
+            token_iter = iter(syn_tokens)
+            try:
+                current_chunk = next(token_iter)
+            except StopIteration as e:
+                self.logger.log_error(f"Error: {e}")
+                response_sender.send(
+                    None, flags=pb_utils.TRITONSERVER_RESPONSE_COMPLETE_FINAL
                 )
-                request.send_response(response)
+                return
+
+            for next_chunk in token_iter:  # runs until *second‑to‑last*
+                response_sender.send(
+                    self._make_response(
+                        current_chunk, channels, sample_width, sample_rate
+                    )
+                )
+                current_chunk = next_chunk
+            # Here 'current_chunk' is the *last* one -----------------------------
+            self.logger.log_info(
+                f"Sending final flags: {pb_utils.TRITONSERVER_RESPONSE_COMPLETE_FINAL}"
+            )
+            response_sender.send(
+                self._make_response(current_chunk, channels, sample_width, sample_rate),
+                flags=pb_utils.TRITONSERVER_RESPONSE_COMPLETE_FINAL,  # FINAL
+            )
 
         except Exception as e:
-            self.logger.log_error(f"Error: {e}")
+            self.logger.log_error(f"Error in response_thread: {e}")
         finally:
-            # signal() semaphore to release the inflight thread
             with self.inflight_thread_count_lck:
                 self.inflight_thread_count -= 1
 
