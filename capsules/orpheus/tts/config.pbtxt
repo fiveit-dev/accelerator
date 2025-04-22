@@ -1,5 +1,5 @@
 ## Use model_transaction_policy to support decoupled inference and streaming 
-name: "tts"
+name: "orpheus"
 backend: "python"
 model_transaction_policy {
   decoupled: True

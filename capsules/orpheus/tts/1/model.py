@@ -4,11 +4,13 @@ import time
 import json
 from helpers.engine import OrpheusModel
 import threading
+import os
 
 
 class TritonPythonModel:
     def initialize(self, args):
-        self.logger = pb_utils.logger
+        self.model_path = os.environ["MODEL_PATH"]
+        self.logger = pb_utils.Logger
         self.model_config = model_config = json.loads(args["model_config"])
         using_decoupled = pb_utils.using_decoupled_model_transaction_policy(
             model_config
@@ -21,7 +23,7 @@ class TritonPythonModel:
                     args["model_name"]
                 )
             )
-        with open("config.json", "r") as f:
+        with open(f"{self.model_path}/1/config.json", "r") as f:
             self.config_dict = json.load(f)
         self.model = OrpheusModel(**self.config_dict["vllm"])
         self.inflight_thread_count = 0

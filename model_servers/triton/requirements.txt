@@ -1,6 +1,10 @@
-transformers==4.38.2
-torch==2.2.1
-accelerate==0.22.0
+snac
+huggingface_hub
+transformers
+vllm==0.7.3
+transformers
+torch
+accelerate
 torchaudio
 bark
 numpy
