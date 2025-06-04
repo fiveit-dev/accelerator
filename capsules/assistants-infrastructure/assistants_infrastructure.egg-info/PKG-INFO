@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: assistants-infrastructure
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: beautifulsoup4>=4.13.4
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: langchain>=0.3.25
+Requires-Dist: langchain-community>=0.3.24
+Requires-Dist: langchain-huggingface>=0.2.0
+Requires-Dist: mcp[cli]>=2.6.1
+Requires-Dist: numpy>=2.2.6
+Requires-Dist: transformers>=4.52.4

@@ -1,18 +1,20 @@
 import httpx
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 import os
 from mcp.server.fastmcp.prompts import base
 from transformers import PretrainedConfig
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
 
 # Initialize FastMCP server
-mcp = FastMCP("assistants")
+mcp = FastMCP("assistants-infraestructure")
 
 
 mcp = FastMCP(
-    "assistants",
+    "assistants-infraestructure",
     dependencies=[
         "httpx",
         "langchain",
@@ -41,6 +43,11 @@ TWYD_API_URL = os.environ.get(
 TWYD_TOPIC_ID = os.environ.get("TWYD_TOPIC_ID", "42")
 
 os.environ["HF_TOKEN"] = HUGGINGFACE_API_KEY
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> PlainTextResponse:
+    return PlainTextResponse("OK")
 
 
 @mcp.prompt()
@@ -212,4 +219,10 @@ async def get_insights_use_case(query: str) -> List[Dict[str, Any]]:
 
 if __name__ == "__main__":
     # Initialize and run the server
-    mcp.run(transport="stdio")
+    mcp.run(
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=8000,
+        path="/mcp",
+        log_level="info",
+    )
