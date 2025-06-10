@@ -7,7 +7,7 @@ This documentation provides a step-by-step guide to set up and run your MCP proj
 Before hosting your MCP server, you need to build the Docker image. Ensure Docker is installed and running on your system. Execute the following command to build the Docker image:
 
 ```bash
-docker build -t asssistants-infra-mcp .
+docker build -t asssistants-infra-mcp . --platform="linux/amd64"
 ```
 
 ### Step 2: Host Your MCP Server
@@ -25,6 +25,9 @@ docker run -d \
   assistants-infra-mc
 ```
 
+In case you would like to deploy it as a service in Kubernetes use the script:
+**service.yml**
+
 ### Step 3: Connect to Claude
 
 In your claude configuration for mcp add this config:
@@ -41,8 +44,4 @@ In your claude configuration for mcp add this config:
       ]
     }
   }
-```
-
-```
-
 ```

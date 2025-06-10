@@ -1,0 +1,31 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: assistants-use-case-mcp
+  namespace: alquimia-runtime
+  annotations:
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      containers:
+        - image: alquimiaai/assistants-use-case-mcp
+          ports:
+            - containerPort: 8000
+          env:
+            - name: HUGGINGFACE_API_KEY
+              value: "YOUR_API_KEY"
+            - name: TWYD_API_KEY
+              value: "YOUR_API_KEY"
+            - name: TWYD_API_URL
+              value: "YOUR_API_URL"
+            - name: TWYD_TOPIC_ID
+              value: ""
+            - name: HUGGINGFACE_HUB_CACHE
+              value: /tmp/huggingface/hub

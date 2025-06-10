@@ -1,8 +1,0 @@
-README.md
-main.py
-pyproject.toml
-assistants_infrastructure.egg-info/PKG-INFO
-assistants_infrastructure.egg-info/SOURCES.txt
-assistants_infrastructure.egg-info/dependency_links.txt
-assistants_infrastructure.egg-info/requires.txt
-assistants_infrastructure.egg-info/top_level.txt
