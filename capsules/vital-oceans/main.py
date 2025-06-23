@@ -3,6 +3,8 @@ import tempfile
 import zipfile
 import os
 import io
+import asyncio
+from pathlib import Path
 
 from shapely.geometry import Polygon
 from pyproj import Geod
@@ -34,11 +36,16 @@ mcp = FastMCP(name="vital-oceans", dependencies=dependencies)
 async def health_check(request: Request) -> PlainTextResponse:
     return PlainTextResponse("OK")
 
+# --- Global Data Storage --- #
+PERSISTENT_DATA = {}
+DATA_DIR = Path("./mcp_data")
+
 # --- lakeFS Client --- #
 load_dotenv()
 LAKEFS_HOST = os.environ["LAKEFS_HOST"]
 LAKEFS_USERNAME = os.environ["LAKEFS_USERNAME"]
 LAKEFS_PASSWORD = os.environ["LAKEFS_PASSWORD"]
+LAKEFS_REPO_ID = os.getenv("LAKEFS_REPO_ID", "vital-oceans")
 
 lakefs_client = Client(
     host=LAKEFS_HOST,
@@ -46,129 +53,193 @@ lakefs_client = Client(
     password=LAKEFS_PASSWORD,
 )
 
-repo = Repository(repository_id="vital-oceans", client=lakefs_client)
+repo = Repository(repository_id=LAKEFS_REPO_ID, client=lakefs_client)
 ref = repo.ref("main")
 
-## Shapefiles ##
+def download_and_cache_shapefile(domain: str) -> Path:
+    """
+    Downloads shapefile components from LakeFS and saves them to persistent storage.
+    Returns the path to the main .shp file.
+    """
+    path = f"datasets/shapefiles/{domain}"
+    domain_dir = DATA_DIR / "shapefiles" / domain
+    domain_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Download all related files
+    for obj in ref.objects(prefix=path):
+        remote_path = obj.path
+        basename = os.path.basename(remote_path)
+        local_path = domain_dir / basename
+        
+        # Skip if file already exists and is not empty
+        if local_path.exists() and local_path.stat().st_size > 0:
+            continue
+            
+        with ref.object(remote_path).reader(mode="rb") as r:
+            with open(local_path, "wb") as f:
+                f.write(r.read())
+    
+    # Find and return the .shp file path
+    shp_files = list(domain_dir.glob("*.shp"))
+    if not shp_files:
+        raise FileNotFoundError(f"No .shp file found for domain: {domain}")
+    
+    return shp_files[0]
+
+def load_shapefile_to_gdf(domain: str) -> gpd.GeoDataFrame:
+    """
+    Loads a shapefile from persistent storage into a GeoDataFrame.
+    """
+    if domain not in PERSISTENT_DATA:
+        shp_path = download_and_cache_shapefile(domain)
+        gdf = gpd.read_file(shp_path).to_crs("EPSG:4326")
+        gdf = gdf[gdf.geometry.notnull() & gdf.geometry.is_valid]
+        PERSISTENT_DATA[domain] = gdf
+        print(f"Loaded and cached shapefile for domain: {domain}")
+    
+    return PERSISTENT_DATA[domain]
+
+def download_and_cache_netcdf(variable: str) -> Path:
+    """
+    Downloads NetCDF file from LakeFS and saves it to persistent storage.
+    Returns the path to the NetCDF file.
+    """
+    file_path = f"datasets/netcdfs/{variable}.nc"
+    netcdf_dir = DATA_DIR / "netcdfs"
+    netcdf_dir.mkdir(parents=True, exist_ok=True)
+    
+    local_path = netcdf_dir / f"{variable}.nc"
+    
+    # Skip if file already exists and is not empty
+    if local_path.exists() and local_path.stat().st_size > 0:
+        return local_path
+    
+    with ref.object(file_path).reader(mode="rb") as r:
+        with open(local_path, "wb") as f:
+            f.write(r.read())
+    
+    return local_path
+
+def load_netcdf_data(variable: str) -> dict:
+    """
+    Loads NetCDF data from persistent storage and processes it.
+    """
+    cache_key = f"netcdf_{variable}"
+    
+    if cache_key not in PERSISTENT_DATA:
+        netcdf_path = download_and_cache_netcdf(variable)
+        
+        # Open the dataset from file
+        nc = xr.open_dataset(netcdf_path, engine="h5netcdf")
+        
+        # Process nc data
+        lats = nc['lat'].values
+        lons = nc['lon'].values
+        lon_grid, lat_grid = np.meshgrid(lons, lats)
+        points = np.vstack((lon_grid.flatten(), lat_grid.flatten())).T
+        gdf = gpd.GeoDataFrame(geometry=gpd.points_from_xy(points[:, 0], points[:, 1]))
+        
+        # Extract attributes
+        key = list(nc.data_vars)[0]
+        
+        processed_data = {
+            "description": nc[key].attrs.get("long_name"),
+            "start_time": nc.attrs["start_time"],
+            "end_time": nc.attrs["end_time"],
+            "values": nc[key].values,
+            "units": nc[key].attrs.get("units"),
+            "key": key,
+            "gdf": gdf
+        }
+        
+        nc.close()  # Close the dataset to free memory
+        PERSISTENT_DATA[cache_key] = processed_data
+        print(f"Loaded and cached NetCDF data for variable: {variable}")
+    
+    return PERSISTENT_DATA[cache_key]
+
+async def initialize_data():
+    """
+    Initialize and cache commonly used datasets at startup.
+    """
+    print("Initializing data cache...")
+    
+    # Pre-load common shapefiles
+    common_shapefiles = ["fishing", "tourism", "marine-ecoregions", "countries"]
+    for domain in common_shapefiles:
+        try:
+            load_shapefile_to_gdf(domain)
+        except Exception as e:
+            print(f"Warning: Could not pre-load shapefile {domain}: {e}")
+    
+    # Pre-load common NetCDF variables
+    common_variables = ["temperature", "chlorophylla", "humidity", "meridional_wind", "zonal_wind", "sea_level_pressure"]
+    for variable in common_variables:
+        try:
+            load_netcdf_data(variable)
+        except Exception as e:
+            print(f"Warning: Could not pre-load NetCDF {variable}: {e}")
+    
+    print("Data cache initialization complete.")
+
+# --- Resource handlers (now simplified) --- #
 
 @mcp.resource("lakefs://shapefiles/{domain}")
 def get_shapefile_binary(domain: str, context: Context):
     """
-    Downloads shapefile components from a LakeFS path, zips them, and returns binary content.
+    Returns binary content of a zipped shapefile from persistent storage.
     """
-    path = f"datasets/shapefiles/{domain}"
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Download all related files to the temp directory
-        for obj in ref.objects(prefix=path):
-            remote_path = obj.path
-            basename = os.path.basename(remote_path)
-            local_path = os.path.join(tmpdir, basename)
-
-            with ref.object(remote_path).reader(mode="rb") as r:
-                with open(local_path, "wb") as f:
-                    f.write(r.read())
-
-        # Create in-memory zip file
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            for file in os.listdir(tmpdir):
-                file_path = os.path.join(tmpdir, file)
-                zf.write(file_path, arcname=file)
-
-        # Return binary content
-        zip_buffer.seek(0)
-        return zip_buffer.read()
-
-@mcp.resource("lakefs://shapefiles/{domain}")
-def get_shapefile(domain: str, context: Context):
-    """
-    Downloads shapefile components from a LakeFS path, zips them, and returns binary content.
-    """
-    path = f"datasets/shapefiles/{domain}"
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Download all related files to the temp directory
-        for obj in ref.objects(prefix=path):
-            remote_path = obj.path
-            basename = os.path.basename(remote_path)
-            local_path = os.path.join(tmpdir, basename)
-
-            with ref.object(remote_path).reader(mode="rb") as r:
-                with open(local_path, "wb") as f:
-                    f.write(r.read())
-
-        # Create in-memory zip file
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            for file in os.listdir(tmpdir):
-                file_path = os.path.join(tmpdir, file)
-                zf.write(file_path, arcname=file)
-
-        # Return binary content
-        zip_buffer.seek(0)
-        return zip_buffer.read()
-
-def binary_to_gdf(binary_zip):
-    """
-    Reads a binary ZIP containing shapefile components into a GeoDataFrame.
+    domain_dir = DATA_DIR / "shapefiles" / domain
     
-    Parameters:
-        binary_zip (bytes): Binary content of the zipped shapefile.
+    if not domain_dir.exists():
+        # Fallback: download if not cached
+        download_and_cache_shapefile(domain)
+    
+    # Create in-memory zip file
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for file_path in domain_dir.iterdir():
+            if file_path.is_file():
+                zf.write(file_path, arcname=file_path.name)
+    
+    zip_buffer.seek(0)
+    return zip_buffer.read()
 
-    Returns:
-        gpd.GeoDataFrame: The loaded GeoDataFrame.
+@mcp.resource("lakefs://netcdfs/{variable}")
+def get_netcdf_binary(variable: str, context: Context):
     """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Extract the binary zip content to the temp directory
-        with zipfile.ZipFile(io.BytesIO(binary_zip)) as zf:
-            zf.extractall(tmpdir)
+    Returns binary content of a NetCDF file from persistent storage.
+    """
+    netcdf_path = DATA_DIR / "netcdfs" / f"{variable}.nc"
+    
+    if not netcdf_path.exists():
+        # Fallback: download if not cached
+        netcdf_path = download_and_cache_netcdf(variable)
+    
+    with open(netcdf_path, "rb") as f:
+        return f.read()
 
-        # Find the .shp file in the extracted contents
-        for file in os.listdir(tmpdir):
-            if file.endswith(".shp"):
-                shapefile_path = os.path.join(tmpdir, file)
-                break
-        else:
-            raise FileNotFoundError("No .shp file found in the provided binary zip.")
-
-        # Load and return the GeoDataFrame
-        gdf = gpd.read_file(shapefile_path).to_crs("EPSG:4326")
-        gdf = gdf[gdf.geometry.notnull() & gdf.geometry.is_valid]
-
-        return gdf
+# --- Tools (updated to use cached data) --- #
 
 @mcp.tool()
 async def query_fishing_data(polygon_coords: list[tuple[float, float]], context: Context) -> str:
     """
     Retrieves fishing activity records from a geospatial dataset whose geometries intersect a given polygon.
-
-    Parameters:
-    -----------
-    polygon_coords : list of tuple of float
-        A list of (longitude, latitude) tuples defining the vertices of the polygon to use as a spatial filter.
-
-    Returns:
-    --------
-    str
-        A CSV-formatted string with matching records.
     """
-
-    content_list = await context.read_resource("lakefs://shapefiles/fishing")    
-    gdf = binary_to_gdf(content_list[0].content)
-
+    gdf = load_shapefile_to_gdf("fishing")
+    
     # Define polygon
     polygon = Polygon(polygon_coords)
-
+    
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     # Filter rows that intersect the polygon
     matches = gdf[gdf.geometry.intersects(polygon)]
-
+    
     if matches.empty:
         raise ValueError("No records were found within the specified polygon.")
-
+    
     # Filter by columns of interest and re-name them
     cols = {
         'nom_estab': 'Nombre de la Unidad Económica',
@@ -180,10 +251,10 @@ async def query_fishing_data(polygon_coords: list[tuple[float, float]], context:
         'localidad': 'Localidad',
         'geometry': 'Geometry',
     }
-
+    
     matches = matches[list(cols.keys())]
     matches.columns = list(cols.values())
-
+    
     # Return up to 20 rows
     max_rows = 20
     if len(matches) > max_rows:
@@ -191,40 +262,28 @@ async def query_fishing_data(polygon_coords: list[tuple[float, float]], context:
         output += f"\n... ({len(matches) - max_rows} more rows not shown)"
     else:
         output = matches.to_csv(index=False)
-
+    
     return output
 
 @mcp.tool()
 async def query_tourism_data(polygon_coords: list[tuple[float, float]], context: Context) -> str:
     """
     Retrieves tourism activity records from a geospatial dataset whose geometries intersect a given polygon.
-
-    Parameters:
-    -----------
-    polygon_coords : list of tuple of float
-        A list of (longitude, latitude) tuples defining the vertices of the polygon to use as a spatial filter.
-
-    Returns:
-    --------
-    str
-        A CSV-formatted string with matching records.
     """
-
-    content_list = await context.read_resource("lakefs://shapefiles/tourism")
-    gdf = binary_to_gdf(content_list[0].content)
-
+    gdf = load_shapefile_to_gdf("tourism")
+    
     # Define polygon
     polygon = Polygon(polygon_coords)
-
+    
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     # Filter rows that intersect the polygon
     matches = gdf[gdf.geometry.intersects(polygon)]
-
+    
     if matches.empty:
         raise ValueError("No records were found within the specified polygon.")
-
+    
     # Filter by columns of interest and re-name them
     cols = {
         'nom_estab': 'Nombre de la Unidad Económica',
@@ -236,10 +295,10 @@ async def query_tourism_data(polygon_coords: list[tuple[float, float]], context:
         'localidad': 'Localidad',
         'geometry': 'Geometry',
     }
-
+    
     matches = matches[list(cols.keys())]
     matches.columns = list(cols.values())
-
+    
     # Return up to 20 rows
     max_rows = 20
     if len(matches) > max_rows:
@@ -247,7 +306,7 @@ async def query_tourism_data(polygon_coords: list[tuple[float, float]], context:
         output += f"\n... ({len(matches) - max_rows} more rows not shown)"
     else:
         output = matches.to_csv(index=False)
-
+    
     return output
 
 @mcp.tool()
@@ -255,29 +314,16 @@ async def identify_region(polygon_coords: list[tuple[float, float]], context: Co
     """
     Identifies the marine ecoregion (ECOREGION, PROVINCE, REALM) and country that intersect
     with a given polygon defined by geographic coordinates (lon, lat).
-
-    Parameters:
-    -----------
-    polygon_coords : list of tuple of float
-        A list of (longitude, latitude) tuples representing the vertices of the polygon.
-
-    Returns:
-    --------
-    dict
     """
-
-    content_list = await context.read_resource("lakefs://shapefiles/marine-ecoregions")
-    marine_gdf = binary_to_gdf(content_list[0].content)
-
-    content_list = await context.read_resource("lakefs://shapefiles/countries")
-    country_gdf = binary_to_gdf(content_list[0].content)
-
+    marine_gdf = load_shapefile_to_gdf("marine-ecoregions")
+    country_gdf = load_shapefile_to_gdf("countries")
+    
     polygon = Polygon(polygon_coords)
     information = {}
-
+    
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     # Filter marine regions that intersect
     matches = marine_gdf[marine_gdf.geometry.intersects(polygon)]
     if not matches.empty:
@@ -287,56 +333,16 @@ async def identify_region(polygon_coords: list[tuple[float, float]], context: Co
             'REALM': matches.iloc[0]['REALM'],
             }
         )
-
+    
     # Filter countries that intersect
     matches = country_gdf[country_gdf.geometry.intersects(polygon)]
     if not matches.empty:
         information.update({'COUNTRY': matches.iloc[0]['NAME']})
-
+    
     if information:
         return information
     else:
         raise ValueError("No region was found within the specified polygon.")
-
-## NetCDFs ##
-@mcp.resource("lakefs://netcdfs/{variable}")
-def get_netcdf_binary(variable: str, context: Context):
-
-    file_path = f"datasets/netcdfs/{variable}.nc"
-
-    # Extract raw bytes
-    with ref.object(file_path).reader(mode="rb") as r:
-        b = r.read()
-
-    return b
-
-def process_netcdf(netcdf_binary):
-
-    # Convert raw bytes into a BytesIO buffer
-    buffer = io.BytesIO(netcdf_binary)
-
-    # Open the dataset from the buffer
-    nc = xr.open_dataset(buffer, engine="h5netcdf")
-
-    # Process nc data
-    lats = nc['lat'].values
-    lons = nc['lon'].values
-    lon_grid, lat_grid = np.meshgrid(lons, lats)
-    points = np.vstack((lon_grid.flatten(), lat_grid.flatten())).T
-    gdf = gpd.GeoDataFrame(geometry=gpd.points_from_xy(points[:, 0], points[:, 1]))
-
-    # Extract attributes
-    key = list(nc.data_vars)[0]
-
-    return {
-        "description": nc[key].attrs.get("long_name"),
-        "start_time": nc.attrs["start_time"],
-        "end_time": nc.attrs["end_time"],
-        "values": nc[key].values,
-        "units": nc[key].attrs.get("units"),
-        "key": key,
-        "gdf": gdf
-    }
 
 @mcp.tool()
 async def query_satellite_data(
@@ -347,55 +353,35 @@ async def query_satellite_data(
     """
     Extracts satellite data for a specified variable within a geographic polygon
     and applies an aggregation function to the selected values.
-
-    Parameters
-    ----------
-    variable : str
-        Name of the variable to extract.
-        Supported options are: 'temperature', 'chlorophylla', 'humidity', 'meridional_wind', 'zonal_wind' and 'sea_level_pressure'
-
-    polygon_coords : list of tuples
-        List of (lon, lat) coordinates defining the polygon.
-
-    agg_func : str
-        Aggregation function to apply.
-        Supported options are: 'mean', 'median', 'sum', 'std'.
-
-    Returns
-    -------
-    dict
-        Dict containing the aggregated value of the variable within the polygon.
     """
-
-    content_list = await context.read_resource(f"lakefs://netcdfs/{variable}")
-    nc_data = process_netcdf(content_list[0].content)
-
+    nc_data = load_netcdf_data(variable)
+    
     if not nc_data:
         raise ValueError(f"Variable '{variable}' not found.")
-
+    
     allowed_tags = ['mean', 'median', 'sum', 'std']
     if not agg_func in allowed_tags:
         raise ValueError(f"Aggregation function '{agg_func}' is not supported.")
-
+    
     polygon = Polygon(polygon_coords)
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     # Check which points are within the polygon
     gdf = nc_data.get("gdf")
     gdf['in_polygon'] = gdf.geometry.within(polygon)
     inside_indices = gdf[gdf['in_polygon']].index
-
+    
     if inside_indices.empty:
         raise ValueError("No satellite data found within the specified polygon.")
-
+    
     # Mask the satellite data using the indices
     values = nc_data.get("values")
     filtered_values = values.flatten()[inside_indices]
-
+    
     # Apply agg function
     result = getattr(np, "nan"+agg_func)(filtered_values)
-
+    
     output = {
         "description": nc_data.get("description"),
         "start_time": nc_data.get("start_time"),
@@ -403,39 +389,28 @@ async def query_satellite_data(
         "units": nc_data.get("units"),
         agg_func: result
     }
-
+    
     # Check for NaNs
     nan_values = sum(np.isnan(filtered_values))
     total_values = len(filtered_values)
     if nan_values:
         output["nan_warning"] = f"{nan_values} nan values out of {total_values} records"
-
+    
     return output
 
-## Geo Spatial Analysis ##
 @mcp.tool()
 async def calculate_geodesic_area(
     polygon_coords: list[tuple[float, float]],
     context: Context) -> float:
     """
     Calculate the geodesic area (in square meters) of a polygon defined by (lon, lat) coordinates.
-
-    Parameters
-    ----------
-    coords : list of tuples
-        List of (longitude, latitude) pairs.
-
-    Returns
-    -------
-    float
-        Area in square meters.
     """
     geod = Geod(ellps="WGS84")
     polygon = Polygon(polygon_coords)
-
+    
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     area, _ = geod.geometry_area_perimeter(polygon)
     return round(abs(area), 2)
 
@@ -445,31 +420,24 @@ async def calculate_geodesic_perimeter(
     context: Context) -> float:
     """
     Calculate the geodesic perimeter (in meters) of a polygon defined by (lon, lat) coordinates.
-
-    Parameters
-    ----------
-    coords : list of tuples)
-        List of (longitude, latitude) pairs.
-
-    Returns
-    -------
-    float
-        Perimeter in meters.
     """
     geod = Geod(ellps="WGS84")
     polygon = Polygon(polygon_coords)
-
+    
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-
+    
     _, perimeter = geod.geometry_area_perimeter(polygon)
     return round(perimeter, 2)
 
 if __name__ == "__main__":
+    # Initialize data cache before starting the server
+    asyncio.run(initialize_data())
+    
     mcp.run(
-        #transport="streamable-http",
-        #host="0.0.0.0",
-        #port=8000,
-        #path="/mcp",
-        #log_level="info",
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=8000,
+        path="/mcp",
+        log_level="info",
     )
