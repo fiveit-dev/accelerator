@@ -182,7 +182,7 @@ async def initialize_data():
     
     print("Data cache initialization complete.")
 
-# --- Resource handlers (now simplified) --- #
+# --- Resource handlers --- #
 
 @mcp.resource("lakefs://shapefiles/{domain}")
 def get_shapefile_binary(domain: str, context: Context):
@@ -219,16 +219,57 @@ def get_netcdf_binary(variable: str, context: Context):
     with open(netcdf_path, "rb") as f:
         return f.read()
 
-# --- Tools (updated to use cached data) --- #
+# --- Tools --- #
+
+def parse_coordinates(coordinates):
+    return [(pair["lng"], pair["lat"]) for pair in coordinates]
+
+def make_shp_summary_from_gdf(gdf: gpd.GeoDataFrame) -> str:
+    total = len(gdf)
+    top_acts = gdf['nombre_act'].value_counts().head(3).to_dict()
+    top_muns = gdf['municipio'].value_counts().head(3).to_dict()
+    top_ocu = gdf['per_ocu'].value_counts().head(3).to_dict()
+    
+    summary_text = (
+        f"🔍 **Resumen de resultados:**\n"
+        f"- Total de registros encontrados: {total}\n"
+        f"- Actividades más frecuentes: {top_acts}\n"
+        f"- Municipios más representados: {top_muns}\n"
+        f"- Estratos de personal ocupado más comunes: {top_ocu}"
+    )
+    return summary_text
 
 @mcp.tool()
-async def query_fishing_data(polygon_coords: list[tuple[float, float]], context: Context) -> str:
+async def query_activity_data(
+    activity: str,
+    polygon_coords: list[dict],
+    context: Context) -> str:
     """
-    Retrieves fishing activity records from a geospatial dataset whose geometries intersect a given polygon.
+    Retrieves economic activity records from a geospatial dataset
+    whose geometries intersect a given polygon.
+
+    Parameters
+    ----------
+    activity : str
+        Type of activity to query. 
+        Supported options are: "fishing", "tourism".
+    polygon_coords : list of dict
+        List of coordinates pairs in {"lat": float, "lng": float} format
+        representing the vertices of the polygon.
+
+    Returns:
+    --------
+    str
+        Plain-text summary of matching records.
     """
-    gdf = load_shapefile_to_gdf("fishing")
+    allowed_acts = ['fishing', 'tourism']
+    if not activity in allowed_acts:
+        raise ValueError(f"Activity '{activity}' is not supported.\nSupported options are: {allowed_acts}.")
+
+    gdf = load_shapefile_to_gdf(activity)
     
     # Define polygon
+    polygon_coords = parse_coordinates(polygon_coords)
     polygon = Polygon(polygon_coords)
     
     if not polygon.is_valid:
@@ -239,92 +280,40 @@ async def query_fishing_data(polygon_coords: list[tuple[float, float]], context:
     
     if matches.empty:
         raise ValueError("No records were found within the specified polygon.")
-    
-    # Filter by columns of interest and re-name them
-    cols = {
-        'nom_estab': 'Nombre de la Unidad Económica',
-        'raz_social': 'Razón social',
-        'nombre_act': 'Nombre de clase de la actividad',
-        'per_ocu': 'Descripcion estrato personal ocupado',
-        'entidad': 'Entidad federativa',
-        'municipio': 'Municipio',
-        'localidad': 'Localidad',
-        'geometry': 'Geometry',
-    }
-    
-    matches = matches[list(cols.keys())]
-    matches.columns = list(cols.values())
-    
-    # Return up to 20 rows
-    max_rows = 20
-    if len(matches) > max_rows:
-        output = matches.head(max_rows).to_csv(index=False)
-        output += f"\n... ({len(matches) - max_rows} more rows not shown)"
-    else:
-        output = matches.to_csv(index=False)
-    
-    return output
+
+    return make_shp_summary_from_gdf(matches)
 
 @mcp.tool()
-async def query_tourism_data(polygon_coords: list[tuple[float, float]], context: Context) -> str:
+async def identify_region(
+    polygon_coords: list[dict],
+    context: Context) -> dict:
     """
-    Retrieves tourism activity records from a geospatial dataset whose geometries intersect a given polygon.
-    """
-    gdf = load_shapefile_to_gdf("tourism")
-    
-    # Define polygon
-    polygon = Polygon(polygon_coords)
-    
-    if not polygon.is_valid:
-        raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
-    
-    # Filter rows that intersect the polygon
-    matches = gdf[gdf.geometry.intersects(polygon)]
-    
-    if matches.empty:
-        raise ValueError("No records were found within the specified polygon.")
-    
-    # Filter by columns of interest and re-name them
-    cols = {
-        'nom_estab': 'Nombre de la Unidad Económica',
-        'raz_social': 'Razón social',
-        'nombre_act': 'Nombre de clase de la actividad',
-        'per_ocu': 'Descripcion estrato personal ocupado',
-        'entidad': 'Entidad federativa',
-        'municipio': 'Municipio',
-        'localidad': 'Localidad',
-        'geometry': 'Geometry',
-    }
-    
-    matches = matches[list(cols.keys())]
-    matches.columns = list(cols.values())
-    
-    # Return up to 20 rows
-    max_rows = 20
-    if len(matches) > max_rows:
-        output = matches.head(max_rows).to_csv(index=False)
-        output += f"\n... ({len(matches) - max_rows} more rows not shown)"
-    else:
-        output = matches.to_csv(index=False)
-    
-    return output
+    Identifies the marine ecoregion and country that intersect
+    with a given polygon defined by geographic coordinates.
 
-@mcp.tool()
-async def identify_region(polygon_coords: list[tuple[float, float]], context: Context) -> dict:
-    """
-    Identifies the marine ecoregion (ECOREGION, PROVINCE, REALM) and country that intersect
-    with a given polygon defined by geographic coordinates (lon, lat).
+    Parameters:
+    -----------
+    polygon_coords : list of dict
+        List of coordinates pairs in {"lat": float, "lng": float} format
+        representing the vertices of the polygon.
+
+    Returns:
+    --------
+    dict
     """
     marine_gdf = load_shapefile_to_gdf("marine-ecoregions")
     country_gdf = load_shapefile_to_gdf("countries")
-    
+
+    # Define polygon
+    polygon_coords = parse_coordinates(polygon_coords)    
     polygon = Polygon(polygon_coords)
-    information = {}
     
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
     
     # Filter marine regions that intersect
+    information = {}
+
     matches = marine_gdf[marine_gdf.geometry.intersects(polygon)]
     if not matches.empty:
         information.update({
@@ -347,27 +336,47 @@ async def identify_region(polygon_coords: list[tuple[float, float]], context: Co
 @mcp.tool()
 async def query_satellite_data(
     variable: str,
-    polygon_coords: list[tuple[float, float]],
+    polygon_coords: list[dict],
     context: Context,
     agg_func='mean') -> dict:
     """
     Extracts satellite data for a specified variable within a geographic polygon
     and applies an aggregation function to the selected values.
+
+    Parameters
+    ----------
+    variable : str
+        Name of the variable to extract. 
+        Supported options are: 'temperature', 'chlorophylla', 'humidity', 'meridional_wind', 'zonal_wind' and 'sea_level_pressure'
+    polygon_coords : list of dict
+        List of coordinates pairs in {"lat": float, "lng": float} format
+        representing the vertices of the polygon.
+    agg_func : str
+        Aggregation function to apply.
+        Supported options are: 'mean', 'median', 'sum', 'std'.
+
+    Returns
+    -------
+    dict
+        Dict containing the aggregated value of the variable within the polygon.
     """
-    nc_data = load_netcdf_data(variable)
+    allowed_vars = ['temperature', 'chlorophylla', 'humidity', 'meridional_wind', 'zonal_wind', 'sea_level_pressure']
+    if not variable in allowed_vars:
+        raise ValueError(f"Variable '{variable}' is not supported.\nSupported options are: {allowed_vars}.")
     
-    if not nc_data:
-        raise ValueError(f"Variable '{variable}' not found.")
-    
-    allowed_tags = ['mean', 'median', 'sum', 'std']
-    if not agg_func in allowed_tags:
-        raise ValueError(f"Aggregation function '{agg_func}' is not supported.")
-    
+    allowed_funcs = ['mean', 'median', 'sum', 'std']
+    if not agg_func in allowed_funcs:
+        raise ValueError(f"Aggregation function '{agg_func}' is not supported.\nSupported options are: {allowed_funcs}.")
+
+    # Define polygon
+    polygon_coords = parse_coordinates(polygon_coords)    
     polygon = Polygon(polygon_coords)
+
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
     
     # Check which points are within the polygon
+    nc_data = load_netcdf_data(variable)
     gdf = nc_data.get("gdf")
     gdf['in_polygon'] = gdf.geometry.within(polygon)
     inside_indices = gdf[gdf['in_polygon']].index
@@ -398,37 +407,77 @@ async def query_satellite_data(
     
     return output
 
+def format_metric(value: float, unit: str) -> str:
+    if unit == "m":
+        if value >= 1000:
+            return f"{value / 1000:,.2f} km"
+        return f"{value:,.2f} m"
+    elif unit == "m2":
+        if value >= 1_000_000:
+            return f"{value / 1_000_000:,.2f} km²"
+        return f"{value:,.2f} m²"
+    else:
+        return f"{value:,.2f} {unit}"
+
 @mcp.tool()
 async def calculate_geodesic_area(
-    polygon_coords: list[tuple[float, float]],
-    context: Context) -> float:
+    polygon_coords: list[dict],
+    context: Context) -> str:
     """
     Calculate the geodesic area (in square meters) of a polygon defined by (lon, lat) coordinates.
+
+    Parameters
+    ----------
+    polygon_coords : list of dict
+        List of coordinates pairs in {"lat": float, "lng": float} format
+        representing the vertices of the polygon.
+
+    Returns
+    -------
+    str
+        Area in square meters.
     """
     geod = Geod(ellps="WGS84")
+
+    # Define polygon
+    polygon_coords = parse_coordinates(polygon_coords)
     polygon = Polygon(polygon_coords)
     
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
     
     area, _ = geod.geometry_area_perimeter(polygon)
-    return round(abs(area), 2)
+    return format_metric(abs(area), unit="m2")
 
 @mcp.tool()
 async def calculate_geodesic_perimeter(
-    polygon_coords: list[tuple[float, float]],
-    context: Context) -> float:
+    polygon_coords: list[dict],
+    context: Context) -> str:
     """
     Calculate the geodesic perimeter (in meters) of a polygon defined by (lon, lat) coordinates.
+
+    Parameters
+    ----------
+    polygon_coords : list of dict
+        List of coordinates pairs in {"lat": float, "lng": float} format
+        representing the vertices of the polygon.
+
+    Returns
+    -------
+    str
+        Perimeter in meters.
     """
     geod = Geod(ellps="WGS84")
+
+    # Define polygon
+    polygon_coords = parse_coordinates(polygon_coords)
     polygon = Polygon(polygon_coords)
     
     if not polygon.is_valid:
         raise ValueError("Invalid polygon. Ensure the coordinates form a valid polygon.")
     
     _, perimeter = geod.geometry_area_perimeter(polygon)
-    return round(perimeter, 2)
+    return format_metric(perimeter, unit="m")
 
 if __name__ == "__main__":
     # Initialize data cache before starting the server
