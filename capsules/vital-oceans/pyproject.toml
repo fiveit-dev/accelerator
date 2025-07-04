@@ -1,7 +1,7 @@
 [project]
 name = "vital-oceans"
 version = "0.1.0"
-description = "Add your description here"
+description = "MCP with geo-spatial analysis tools"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -9,8 +9,10 @@ dependencies = [
     "geopandas>=1.1.0",
     "httpx>=0.28.1",
     "lakefs>=0.11.1",
+    "mo-sql-parsing>=11.675.25037",
     "numpy>=2.2.6",
     "pandas>=2.3.0",
+    "pandasql>=0.7.3",
     "pyproj>=3.7.1",
     "shapely>=2.1.1",
     "xarray[io]>=2025.6.1",
