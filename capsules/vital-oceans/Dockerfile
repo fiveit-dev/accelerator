@@ -17,5 +17,4 @@ COPY . .
 EXPOSE 8000
 
 # 7. At runtime, start your FastMCP server:
-#    (Assumes your main script is named app.py)
 CMD ["python", "main.py"]
