@@ -5,6 +5,7 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
 ## Features
 
 ### Tools
+
 - **Service Status Checking**: Monitor ARSAT service health and uptime
 - **Account Management**: Retrieve customer account summaries and billing information
 - **Support Ticket Creation**: Create and track customer support tickets
@@ -12,6 +13,7 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
 - **Coverage Checking**: Verify service availability for specific addresses
 
 ### Prompts
+
 - **Customer Support Greeting**: Standard greeting for customer interactions
 - **Technical Support Escalation**: Template for handling technical issues
 
@@ -20,14 +22,16 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
 ### Local Development
 
 1. **Install dependencies**:
+
    ```bash
    cd capsules/arsat-customer-care
    uv sync
    ```
 
 2. **Run the MCP server**:
+
    ```bash
-   uv run main.py
+   uv run consult-tickets.py
    ```
 
 3. **Test the server** (optional):
@@ -38,6 +42,7 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
 ### Docker Deployment
 
 1. **Build the Docker image**:
+
    ```bash
    docker build -t arsat-customer-care-mcp . --platform="linux/amd64"
    ```
@@ -47,8 +52,12 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
    docker run -d \
      --name arsat-customer-care \
      -p 8000:8000 \
-     -e ARSAT_API_KEY="your_api_key" \
-     -e ARSAT_API_URL="https://api.arsat.com.ar" \
+     -e MAXIMO_BASE_URL="https://your-maximo-url.com" \
+     -e MAXIMO_USER_ID="your_user_id" \
+     -e MAXIMO_PASSWD="your_password" \
+     -e MAXIMO_REQUEST_TIMEOUT="10.0" \
+     -e MAXIMO_HTTP_VERIFY_SSL="true" \
+     -e MAXIMO_OPEN_TICKET_STATUSES="OPEN,IN_PROGRESS,PENDING" \
      arsat-customer-care-mcp
    ```
 
@@ -71,22 +80,3 @@ Add this configuration to your `claude_desktop_config.json`:
   }
 }
 ```
-
-## Environment Variables
-
-- `ARSAT_API_KEY`: API key for ARSAT services integration
-- `ARSAT_API_URL`: Base URL for ARSAT API (default: https://api.arsat.com.ar)
-
-## Available Tools
-
-1. **check_service_status(service_id)** - Check service operational status
-2. **get_account_summary(account_number)** - Retrieve customer account details
-3. **create_support_ticket(customer_id, issue_type, description, priority)** - Create support tickets
-4. **get_billing_information(account_number)** - Access billing and payment data
-5. **schedule_technician_visit(account_number, preferred_date, time_slot, issue_description)** - Schedule service visits
-6. **get_service_coverage(address)** - Check service availability by location
-
-## Available Prompts
-
-1. **customer_support_greeting()** - Standard customer service greeting
-2. **technical_support_escalation(issue)** - Technical issue escalation template

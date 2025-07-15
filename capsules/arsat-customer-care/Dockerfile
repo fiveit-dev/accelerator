@@ -7,8 +7,12 @@ RUN pip install uv
 
 # Copy project files
 COPY pyproject.toml .
-COPY main.py .
+COPY consult-tickets.py main.py
 COPY claude_stdio.py .
+COPY config/ config/
+COPY dependencies/ dependencies/
+COPY models/ models/
+COPY mocks/ mocks/
 
 # Install dependencies
 RUN uv pip install --system -e .
