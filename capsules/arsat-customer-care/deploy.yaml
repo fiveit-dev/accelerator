@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: assistants-use-case-mcp
+  name: maximo-tickets-mcp
   namespace: alquimia-runtime
   annotations:
     serving.knative.openshift.io/enablePassthrough: "true"
@@ -25,4 +25,4 @@ spec:
             - name: MAXIMO_OPEN_TICKET_STATUSES
               value: '["NUEVO","RECHAZADO","ENPROG","REL PEND","REL RES","VERIF_CLI"]'
             - name: MAXIMO_REQUEST_TIMEOUT
-              value: 10.0
+              value: "10.0"
