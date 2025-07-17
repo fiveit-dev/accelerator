@@ -44,39 +44,15 @@ This capsule provides an MCP (Model Context Protocol) server for ARSAT customer 
 1. **Build the Docker image**:
 
    ```bash
-   docker build -t arsat-customer-care-mcp . --platform="linux/amd64"
+   docker build -t alquimiaai/arsat-customer --platform=linux/amd64 .
    ```
 
-2. **Run the container**:
+2. **Deploy using service.yaml**:
+
    ```bash
-   docker run -d \
-     --name arsat-customer-care \
-     -p 8000:8000 \
-     -e MAXIMO_BASE_URL="https://your-maximo-url.com" \
-     -e MAXIMO_USER_ID="your_user_id" \
-     -e MAXIMO_PASSWD="your_password" \
-     -e MAXIMO_REQUEST_TIMEOUT="10.0" \
-     -e MAXIMO_HTTP_VERIFY_SSL="true" \
-     -e MAXIMO_OPEN_TICKET_STATUSES="OPEN,IN_PROGRESS,PENDING" \
-     arsat-customer-care-mcp
+   kubectl apply -f deploy.yaml
    ```
 
-### Claude Desktop Integration
-
-Add this configuration to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "arsat-customer-care": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/full/path/to/capsules/arsat-customer-care",
-        "run",
-        "claude_stdio.py"
-      ]
-    }
-  }
-}
-```
+3. **Configuration**:
+   - **For mock data**: Do not specify the `MAXIMO_BASE_URL` environment variable
+   - **For production**: Set `MAXIMO_BASE_URL` to the MAXIMO production URL

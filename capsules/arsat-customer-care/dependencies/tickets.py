@@ -112,6 +112,7 @@ class MaximoFakeTicketsProvider(TicketsProvider):
 def get_tickets_provider():
     def _get_maximo_provider() -> TicketsProvider:
         if settings.MAXIMO_BASE_URL:
+            logger.debug("Using MaximoTicketsProvider with real Maximo instance")
             return MaximoTicketsProvider(
                 settings.MAXIMO_BASE_URL,
                 settings.MAXIMO_USER_ID,
@@ -120,6 +121,7 @@ def get_tickets_provider():
                 verify_ssl=settings.MAXIMO_HTTP_VERIFY_SSL,
             )
         else:
+            logger.debug("Using MaximoFakeTicketsProvider with mock data")
             return MaximoFakeTicketsProvider()
 
     return _get_maximo_provider
