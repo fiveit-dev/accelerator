@@ -1,11 +1,11 @@
 from fastmcp import FastMCP
-from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.server.context import Context
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from loguru import logger
 import json
 from fastmcp.server.dependencies import get_http_headers
+from dataclasses import dataclass
 
 # Initialize FastMCP server
 mcp = FastMCP(
@@ -15,6 +15,11 @@ mcp = FastMCP(
         "pydantic",
     ],
 )
+
+
+@dataclass
+class MaximoContext:
+    pluspcustomer: str
 
 
 @mcp.custom_route("/health", methods=["GET"])
@@ -35,17 +40,19 @@ async def get_active_tickets(context: Context):
     """
     from dependencies.tickets import get_tickets_provider
 
-    headers = get_http_headers()
-    context_data = headers.get("context", {})
-    if isinstance(context_data, str):
-        try:
-            context_data = json.loads(context_data)
-        except json.JSONDecodeError:
-            await context.error("Failed to decode context from JSON string")
-            raise ValueError("Invalid context format")
+    result = await context.elicit(
+        message="Provide your active session", response_type=MaximoContext
+    )
 
-    customer_id = context_data.get("session", {}).get("pluspcustomer", None)
+    if result.action == "decline":
+        await context.error("Active session not provided")
+        raise ValueError("Active session not provided")
 
+    if result.action == "cancel":
+        await context.error("Active session request was cancelled")
+        raise ValueError("Active session request was cancelled")
+
+    customer_id = result.data.pluspcustomer
     if not customer_id:
         await context.error("Not found customer_id")
         raise ValueError("Customer ID not found in context")
@@ -73,20 +80,19 @@ async def get_ticket_by_id(ticket_id: str, context: Context):
     """
     from dependencies.tickets import get_tickets_provider
 
-    headers = get_http_headers()
-    context_data = headers.get("context", {})
-    if isinstance(context_data, str):
-        try:
-            context_data = json.loads(context_data)
-        except json.JSONDecodeError:
-            await context.error("Failed to decode context from JSON string")
-            raise ValueError("Invalid context format")
+    result = await context.elicit(
+        message="Provide your active session", response_type=MaximoContext
+    )
 
-    customer_id = context_data.get("session", {}).get("pluspcustomer", None)
+    if result.action == "decline":
+        await context.error("Active session not provided")
+        raise ValueError("Active session not provided")
 
-    if not customer_id:
-        await context.error("Not found customer_id")
-        raise ValueError("Customer ID not found in context")
+    if result.action == "cancel":
+        await context.error("Active session request was cancelled")
+        raise ValueError("Active session request was cancelled")
+
+    customer_id = result.data.pluspcustomer
 
     await context.debug(
         f"Get ticket by id was called! - ticket_id: {ticket_id} - pluspcustomer: {customer_id}"
