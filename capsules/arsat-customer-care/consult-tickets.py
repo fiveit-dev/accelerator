@@ -3,8 +3,6 @@ from fastmcp.server.context import Context
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from loguru import logger
-import json
-from fastmcp.server.dependencies import get_http_headers
 from dataclasses import dataclass
 
 # Initialize FastMCP server
@@ -52,9 +50,11 @@ async def get_active_tickets(context: Context):
         await context.error("Active session request was cancelled")
         raise ValueError("Active session request was cancelled")
 
+    logger.debug(f"Result from elicit: {result}")
     customer_id = result.data.pluspcustomer
+
     if not customer_id:
-        await context.error("Not found customer_id")
+        logger.error("Not found customer_id")
         raise ValueError("Customer ID not found in context")
 
     logger.debug(f"Get active tickets was called! - pluspcustomer: {customer_id}")
@@ -92,9 +92,11 @@ async def get_ticket_by_id(ticket_id: str, context: Context):
         await context.error("Active session request was cancelled")
         raise ValueError("Active session request was cancelled")
 
+    logger.debug(f"Result from elicit: {result}")
+
     customer_id = result.data.pluspcustomer
 
-    await context.debug(
+    logger.debug(
         f"Get ticket by id was called! - ticket_id: {ticket_id} - pluspcustomer: {customer_id}"
     )
 
