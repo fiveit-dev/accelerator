@@ -1,0 +1,13 @@
+[project]
+name = "arsat-customer-care"
+version = "0.1.0"
+description = "ARSAT Customer Care MCP Server with support tools and resources"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.8.1",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "pydantic>=2.0.0",
+    "python-decouple>=3.8",
+]
