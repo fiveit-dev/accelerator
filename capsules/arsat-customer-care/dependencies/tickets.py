@@ -100,6 +100,23 @@ class MaximoTicketsProvider(TicketsProvider):
             "spi:ticketid": ticket.TICKETID,
         }
 
+        if ticket.WORKLOGS and len(ticket.WORKLOGS) > 0:
+            payload["spi:worklog"] = [
+                {
+                    # CreateBy y modifiBy Debe ser el mismo usuario que crea el ticket?
+                    # Las fechas create y modify deben ser generadas por el sistema Maximo?
+                    "spi:createby": wl.CREATEBY,
+                    "spi:createdate": wl.CREATEDATE,
+                    "spi:description": wl.DESCRIPTION,
+                    "spi:logtype": wl.LOGTYPE,
+                    "spi:logdescription": wl.LOGDESCRIPTION,
+                    "spi:modifyby": wl.MODIFYBY,
+                    "spi:modifydate": wl.MODIFYDATE,
+                    "spi:siteid": wl.SITEID,
+                }
+                for wl in ticket.WORKLOGS
+            ]
+
         # Filtramos los valores nulos del payload
         payload = {k: v for k, v in payload.items() if v is not None}
 
