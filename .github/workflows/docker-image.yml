@@ -7,6 +7,13 @@ on:
       - '.github/workflows/docker-image.yml'
     branches:
       - main
+  pull_request:
+    types: [closed]
+    paths:
+      - 'capsules/arsat-customer-care/**'
+      - '.github/workflows/docker-image.yml'
+    branches:
+      - main
 
 jobs:
   build-and-push:

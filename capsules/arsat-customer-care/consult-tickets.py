@@ -97,31 +97,6 @@ async def get_classification(query: str, Context: Context):
     ## TODO: Implement with alquimia core
 
 
-@mcp.tool
-async def create_ticket(context: Context, ticket : Ticket):
-    """
-    Create a new ticket in the system.
-
-    Parameters
-    ----------
-    ticket : Ticket
-        The ticket data to create.
-
-    Returns
-    -------
-    Ticket
-        The created ticket object.
-    """
-    
-    await validate_session_and_get_customer_id(context)
-    
-    tickets_provider = get_tickets_provider()()
-    created_ticket = await tickets_provider.create_ticket(ticket)
-    if created_ticket:
-        return created_ticket
-    return None
-
-
 async def validate_session_and_get_customer_id(context: Context) -> str:
     """
     Valida la sesión del usuario y retorna el customer_id.

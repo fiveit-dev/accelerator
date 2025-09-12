@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel
 
 
@@ -7,26 +7,28 @@ class Worklog(BaseModel):
     CREATEDATE: Optional[str] = None
     DESCRIPTION: Optional[str] = None
     LOGTYPE: Optional[str] = None
-    LOGDESCRIPTION: Optional[str] = None
     MODIFYBY: Optional[str] = None
     MODIFYDATE: Optional[str] = None
     SITEID: Optional[str] = None
 
     @classmethod
-    def from_maximo_oslc(cls, worklogs: List[dict]) -> List:
+    def from_maximo_xml(cls, worklogs: Union[dict, List[dict]]) -> List:
+        # Manejar el caso en que worklogs es un solo dict en lugar de una lista
+        if isinstance(worklogs, dict):
+            worklogs = [worklogs]
+
         return [
             cls(
-                CREATEBY=wl.get("spi:createby"),
-                CREATEDATE=wl.get("spi:createdate"),
-                DESCRIPTION=wl.get("spi:description"),
-                LOGTYPE=wl.get("spi:logtype"),
-                LOGDESCRIPTION=wl.get("spi:logdescription"),
-                MODIFYBY=wl.get("spi:modifyby"),
-                MODIFYDATE=wl.get("spi:modifydate"),
-                SITEID=wl.get("spi:siteid"),
+                CREATEBY=wl.get("CREATEBY"),
+                CREATEDATE=wl.get("CREATEDATE"),
+                DESCRIPTION=wl.get("DESCRIPTION"),
+                LOGTYPE=wl.get("LOGTYPE"),
+                MODIFYBY=wl.get("MODIFYBY"),
+                MODIFYDATE=wl.get("MODIFYDATE"),
+                SITEID=wl.get("SITEID"),
             )
             for wl in worklogs
-            if wl.get("spi:clientviewable", False)
+            if wl.get("CLIENTVIEWABLE") in ("1", "True")
         ]
 
     @classmethod
@@ -41,9 +43,6 @@ class Worklog(BaseModel):
                 .get("DESCRIPTION", {})
                 .get("content"),
                 LOGTYPE=wl.get("Attributes", {}).get("LOGTYPE", {}).get("content"),
-                LOGDESCRIPTION=wl.get("Attributes", {})
-                .get("LOGDESCRIPTION", {})
-                .get("content"),
                 MODIFYBY=wl.get("Attributes", {}).get("MODIFYBY", {}).get("content"),
                 MODIFYDATE=wl.get("Attributes", {})
                 .get("MODIFYDATE", {})
@@ -65,15 +64,15 @@ class Ticket(BaseModel):
     WORKLOGS: List[Worklog] = []
 
     @classmethod
-    def from_maximo_oslc(cls, ticket: dict):
+    def from_maximo_xml(cls, ticket: dict):
         return cls(
-            CLASS=ticket.get("spi:class"),
-            DESCRIPTION=ticket.get("spi:description"),
-            PLUSPCUSTOMER=ticket.get("spi:pluspcustomer"),
-            STATUS=ticket.get("spi:status"),
-            STATUSDATE=ticket.get("spi:statusdate"),
-            TICKETID=ticket.get("spi:ticketid"),
-            WORKLOGS=Worklog.from_maximo_oslc(ticket.get("spi:worklog", [])),
+            CLASS=ticket.get("CLASS"),
+            DESCRIPTION=ticket.get("DESCRIPTION"),
+            PLUSPCUSTOMER=ticket.get("PLUSPCUSTOMER"),
+            STATUS=ticket.get("STATUS"),
+            STATUSDATE=ticket.get("STATUSDATE"),
+            TICKETID=ticket.get("TICKETID"),
+            WORKLOGS=Worklog.from_maximo_xml(ticket.get("WORKLOG", [])),
         )
 
     @classmethod
