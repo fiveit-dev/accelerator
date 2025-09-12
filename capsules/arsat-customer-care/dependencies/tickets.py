@@ -66,7 +66,7 @@ class MaximoTicketsProvider(TicketsProvider):
             tickets_data = [tickets_data]
             
         logger.debug(f"Tickets encontrados: {len(tickets_data)}")
-        return [Ticket.from_maximo_oslc(t) for t in tickets_data]
+        return [Ticket.from_maximo_xml(t) for t in tickets_data]
     
     async def get_active_tickets(self, customer_id) -> List[Ticket]:
 

@@ -64,7 +64,7 @@ class Ticket(BaseModel):
     WORKLOGS: List[Worklog] = []
 
     @classmethod
-    def from_maximo_oslc(cls, ticket: dict):
+    def from_maximo_xml(cls, ticket: dict):
         return cls(
             CLASS=ticket.get("CLASS"),
             DESCRIPTION=ticket.get("DESCRIPTION"),
