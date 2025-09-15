@@ -1,5 +1,5 @@
 from typing import List, Optional, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Worklog(BaseModel):
@@ -28,7 +28,7 @@ class Worklog(BaseModel):
                 SITEID=wl.get("SITEID"),
             )
             for wl in worklogs
-            if wl.get("CLIENTVIEWABLE") in ("1", "True")
+            if str(wl.get("CLIENTVIEWABLE")).lower in ("1", "True")
         ]
 
     @classmethod
@@ -61,7 +61,7 @@ class Ticket(BaseModel):
     STATUS: Optional[str] = None
     STATUSDATE: Optional[str] = None
     TICKETID: Optional[str] = None
-    WORKLOGS: List[Worklog] = []
+    WORKLOGS: List[Worklog] = Field(default_factory=list)
 
     @classmethod
     def from_maximo_xml(cls, ticket: dict):
@@ -77,19 +77,14 @@ class Ticket(BaseModel):
 
     @classmethod
     def from_maximo_dump(cls, ticket: dict):
+        atributtes = ticket.get("Attributes", {})
         return cls(
-            CLASS=ticket.get("Attributes", {}).get("CLASS", {}).get("content"),
-            DESCRIPTION=ticket.get("Attributes", {})
-            .get("DESCRIPTION", {})
-            .get("content"),
-            PLUSPCUSTOMER=ticket.get("Attributes", {})
-            .get("PLUSPCUSTOMER", {})
-            .get("content"),
-            STATUS=ticket.get("Attributes", {}).get("STATUS", {}).get("content"),
-            STATUSDATE=ticket.get("Attributes", {})
-            .get("STATUSDATE", {})
-            .get("content"),
-            TICKETID=ticket.get("Attributes", {}).get("TICKETID", {}).get("content"),
+            CLASS=atributtes.get("CLASS", {}).get("content"),
+            DESCRIPTION=atributtes.get("DESCRIPTION", {}).get("content"),
+            PLUSPCUSTOMER=atributtes.get("PLUSPCUSTOMER", {}).get("content"),
+            STATUS=atributtes.get("STATUS", {}).get("content"),
+            STATUSDATE=atributtes.get("STATUSDATE", {}).get("content"),
+            TICKETID=atributtes.get("TICKETID", {}).get("content"),
             WORKLOGS=Worklog.from_maximo_dump(
                 ticket.get("RelatedMbos", {}).get("WORKLOG", [])
             ),

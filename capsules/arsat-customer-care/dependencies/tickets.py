@@ -117,7 +117,7 @@ class MaximoFakeTicketsProvider(TicketsProvider):
 
     async def get_active_tickets(self, customer_id) -> List[Ticket]:
         return [
-            Ticket._dump(t)
+            Ticket.from_maximo_dump(t)
             for t in self.tickets
             if t["Attributes"]["STATUS"]["content"]
             in settings.MAXIMO_OPEN_TICKET_STATUSES
